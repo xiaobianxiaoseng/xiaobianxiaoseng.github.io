@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Game</title>
+</head>
+<body>
+    <!-- Form for uploading images -->
+    <form action="#upload" method="POST" enctype="multipart/form-data">
+        Select an image to upload:
+        <input type="file" name="image">
+
+
+        <input type="submit" value="Upload Image">
+    </form>
+    <!-- Image containers -->
+    <div class="image-container">
+        <img id="image1" src="image1.png">
+        <img id="image2" src="image2.png">
+        <img id="image3" src="image3.png">
+        <img id="image4" src="image4.png">
+        <img id="image5" src="image5.png">
+        <img id="image6" src="image6.png">
+        <img id="image7" src="image7.png">
+        <img id="image8" src="image8.png">
+    </div>
+    <!-- Script for handling form submission -->
+    <script>
+        // Handle form submission
+        const form = document.querySelector('form[action="#upload"]');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            // Get selected file from input field
+            const fileInput = form.elements['image'];
+            const file = fileInput.files[0];
+            
+            // Create new Blob object with selected file
+            const blob = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = resolve;
+                reader.readAsArrayBuffer(file);
+            });
+            
+            // Set source attribute of each image element to URL of newly created Blob
+            const imageElements = document.querySelectorAll('.image-container img');
+            imageElements.forEach((element) => {
+                const url = URL.createObjectURL(blob);
+                element.src = url;
+                
+                // Remove old image elements
+                const oldElement = document.querySelector(`#${element.id}`);
+                oldElement && oldElement.remove();
+            });
+            
+            // Clean up by removing temporary Blob object
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
