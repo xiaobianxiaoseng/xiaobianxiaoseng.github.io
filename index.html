@@ -1,61 +1,88 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Image Game</title>
+  <title>画像ゲーム</title>
+  <style>
+    #container {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      border: 1px solid black;
+    }
+    .image {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: blue;
+      text-align: center;
+      color: white;
+      font-size: 24px;
+      line-height: 50px;
+    }
+  </style>
 </head>
 <body>
-    <!-- Form for uploading images -->
-    <form action="#upload" method="POST" enctype="multipart/form-data">
-        Select an image to upload:
-        <input type="file" name="image">
+  <div id="container"></div>
 
+  <script>
+    const container = document.getElementById("container");
+    const images = ["image1.png", "image2.png", "image3.png", "image4.png", "image5.png", "image6.png", "image7.png", "image8.png"];
+    const keyPressed = {};
 
-        <input type="submit" value="Upload Image">
-    </form>
-    <!-- Image containers -->
-    <div class="image-container">
-        <img id="image1" src="image1.png">
-        <img id="image2" src="image2.png">
-        <img id="image3" src="image3.png">
-        <img id="image4" src="image4.png">
-        <img id="image5" src="image5.png">
-        <img id="image6" src="image6.png">
-        <img id="image7" src="image7.png">
-        <img id="image8" src="image8.png">
-    </div>
-    <!-- Script for handling form submission -->
-    <script>
-        // Handle form submission
-        const form = document.querySelector('form[action="#upload"]');
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            
-            // Get selected file from input field
-            const fileInput = form.elements['image'];
-            const file = fileInput.files[0];
-            
-            // Create new Blob object with selected file
-            const blob = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = resolve;
-                reader.readAsArrayBuffer(file);
-            });
-            
-            // Set source attribute of each image element to URL of newly created Blob
-            const imageElements = document.querySelectorAll('.image-container img');
-            imageElements.forEach((element) => {
-                const url = URL.createObjectURL(blob);
-                element.src = url;
-                
-                // Remove old image elements
-                const oldElement = document.querySelector(`#${element.id}`);
-                oldElement && oldElement.remove();
-            });
-            
-            // Clean up by removing temporary Blob object
-            URL.revokeObjectURL(url);
-        });
-    </script>
+    // 初期画像の生成
+    let currentImage = document.createElement("div");
+    currentImage.className = "image";
+    currentImage.innerText = "1";
+    currentImage.style.left = "275px"; // 初期位置を設定
+    container.appendChild(currentImage);
+
+    // 矢印キーの押下イベントのリスナー登録
+    document.addEventListener("keydown", (event) => {
+      keyPressed[event.key] = true;
+    });
+
+    document.addEventListener("keyup", (event) => {
+      keyPressed[event.key] = false;
+    });
+
+    // 画像の移動と衝突処理の実行
+    function moveImage() {
+      const currentImageLeft = parseInt(currentImage.style.left);
+      
+      // 左矢印キーが押された場合
+      if (keyPressed["ArrowLeft"] && currentImageLeft > 0) {
+        currentImage.style.left = `${currentImageLeft - 5}px`;
+      }
+      
+      // 右矢印キーが押された場合
+      if (keyPressed["ArrowRight"] && currentImageLeft < (container.offsetWidth - currentImage.offsetWidth)) {
+        currentImage.style.left = `${currentImageLeft + 5}px`;
+      }
+      
+      // 衝突判定と画像の変更
+      const nextImageIndex = parseInt(currentImage.innerText) + 1;
+      const nextImage = images[nextImageIndex - 1];
+      const collisionImages = container.getElementsByClassName("image");
+      
+      for (let i = 0; i < collisionImages.length; i++) {
+        const collisionImage = collisionImages[i];
+        const collisionImageLeft = parseInt(collisionImage.style.left);
+        
+        // 衝突判定
+        if (currentImage !== collisionImage && collisionImageLeft === currentImageLeft) {
+          collisionImage.innerText = nextImageIndex.toString();
+          collisionImage.style.backgroundColor = "blue";
+          currentImage.remove();
+          currentImage = collisionImage;
+          break;
+        }
+      }
+    }
+
+    // 定期的に画像を移動する
+    setInterval(moveImage, 10);
+  </script>
 </body>
 </html>
+
